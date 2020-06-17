@@ -3,7 +3,7 @@ import cv2
 from PIL import Image
 
 def load_image(path):
-    image = np.asarray(Image.open(filename))
+    image = np.asarray(Image.open(path))
     image = np.transpose(image, (2,0,1))  #WxHxC to CxWxH
     return image
 
