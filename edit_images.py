@@ -24,9 +24,10 @@ def morph_coefficient(w_input, w_exemplar, boundary, map_k=None):
     return proj_y[0,0] - proj_x[0,0]
 
 
-def feature_morph(latent, boundary, effect_coef, latent_optimizer,
+def feature_morph(latent, boundary, effect_coef, latent_optimizer, facenet,
                   n_iters=100, identity_correction=True, identity_coef=2):
-
+    
+    device = latent_optimizer.device
     latent = torch.tensor(latent, dtype=torch.float32, device=device)
     latent.requires_grad_(True)
 
@@ -65,7 +66,7 @@ def feature_morph(latent, boundary, effect_coef, latent_optimizer,
     return result, path
 
 
- def arg_parse():
+def arg_parse():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Latent Optimization module")
     parser.add_argument(

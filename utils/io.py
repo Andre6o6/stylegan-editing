@@ -11,3 +11,11 @@ def save_image(image, path):
     image = np.transpose(image, (1,2,0)).astype(np.uint8)
     image = Image.fromarray(image)
     image.save(path)
+
+def get_image_numpy(tensor, saturate=False):
+    img = tensor.detach().cpu().squeeze().numpy()
+    img = img.transpose((1,2,0))
+    if saturate:
+        img = (img - img.min())/(img.max() - img.min())
+    img = (255*img).astype(np.uint8)
+    return img
