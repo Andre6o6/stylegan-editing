@@ -24,7 +24,7 @@ def morph_coefficient(w_input, w_exemplar, boundary, map_k=None):
     return proj_y[0,0] - proj_x[0,0]
 
 
-def feature_morph(latent, boundary, effect_coef, 
+def feature_morph(latent, boundary, effect_coef, latent_optimizer,
                   n_iters=100, identity_correction=True, identity_coef=2):
 
     latent = torch.tensor(latent, dtype=torch.float32, device=device)
@@ -138,8 +138,8 @@ def main():
     facenet = InceptionResnetV1(pretrained='vggface2').to(device).eval()
     
     # Feature transfer
-    effect_coef = morph_coefficient(w_input, w_exemplar, boundary)
-    result_latent, _ = feature_morph(w_input, boundary, effect_coef, \
+    effect_coef = morph_coefficient(w_input, w_exemplar, boundary, map_k=5)
+    result_latent, _ = feature_morph(w_input, boundary, effect_coef, latent_optimizer, \
         n_iters=args.n_iters, identity_correction=identity_correction, identity_coef=args.identity)
     
     # Save results

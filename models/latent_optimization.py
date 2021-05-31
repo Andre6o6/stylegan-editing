@@ -13,6 +13,8 @@ class VGGPrerocess(nn.Module):
     def __init__(self, image_size=256):
         super().__init__()
         self.image_size = image_size
+
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.mean = torch.tensor([0.485, 0.456, 0.406]).to(device).view(-1,1,1)
         self.std = torch.tensor([0.229, 0.224, 0.225]).to(device).view(-1,1,1)
 
@@ -26,6 +28,9 @@ class LatentOptimizer(nn.Module):
         super().__init__()
         
         assert latent_space in ['Z', 'W', 'WP'], "Only Z, W, WP are supported"
+
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = device
 
         self.model = model.to(device).eval()
         self.latent_space = latent_space

@@ -21,23 +21,26 @@ from models.loss import LatentLoss
 from utils.blur import GaussianSmoothing
 
 
-def prepare_reference_image(imagepath):
+def prepare_reference_image(imagepath, latent_optimizer):
     """Get target image tensor and target features tensor."""
-    reference_image = transforms.ToTensor()(Image.open(imagepath)).unsqueeze(0).to(device)
+    reference_image = transforms.ToTensor()(Image.open(imagepath)).unsqueeze(0).to(latent_optimizer.device)
     with torch.no_grad():
         prep_image = latent_optimizer.preprocess(reference_image)
         reference_features = latent_optimizer.feature_extractor(prep_image)
     return reference_image, reference_features
 
 
-def prepare_latents(latent_predictor_path=None, latent_space="WP"):
+def prepare_latents(reference_image, latent_optimizer, latent_predictor_path=None):
     """Get initial prediction for latent vector."""
-    if latent_predictor_path and latent_space == "WP":
+    device = latent_optimizer.device
+    
+    if latent_predictor_path and latent_optimizer.latent_space == "WP":
         image_to_latent = InitialLatentPredictor().to(device)
         image_to_latent.load_state_dict(torch.load(latent_predictor_path))
         image_to_latent.eval()
 
         with torch.no_grad():
+            prep_image = latent_optimizer.preprocess(reference_image)
             initial_latents = image_to_latent(prep_image)
         initial_latents = initial_latents.detach().to(device).requires_grad_(True)
     elif latent_optimizer.latent_space == "WP":
@@ -47,7 +50,7 @@ def prepare_latents(latent_predictor_path=None, latent_space="WP"):
     return initial_latents
 
 
-def optimize(reference_image, reference_features, initial_latents, 
+def optimize(reference_image, reference_features, initial_latents, latent_optimizer,
              n_iters=100, cascade=True, cascade_iters=50, smoothing=None):
     """Perform latent optimization, only on crude feature maps first few steps."""
     # Loss and optimizer
@@ -144,7 +147,7 @@ def main():
     converted_model = StyleGANGenerator("stylegan_ffhq")
 
     # Initialize latent optimization pipeline (generator -> vgg)
-    latent_optimizer = LatentOptimizer(converted_model.model, vgg_layer=12, latent_space="WP")
+    latent_optimizer = LatentOptimizer(converted_model.model.to(device), vgg_layer=12, latent_space="WP")
 
     smoothing = GaussianSmoothing(3, kernel_size=7, sigma=5).to(device)
     
@@ -156,12 +159,12 @@ def main():
 
         # Load target image and get features
         image_path = os.path.join(aligned_images, file)
-        reference_image, reference_features = prepare_reference_image(image_path)
+        reference_image, reference_features = prepare_reference_image(image_path, latent_optimizer)
         
         # Predict initial latent vector or randomly sample it
-        initial_latents = prepare_latents(args.predictor_path, latent_optimizer.latent_space)
+        initial_latents = prepare_latents(reference_image, latent_optimizer, args.predictor_path)
 
-        optimized_dlatents = optimize(reference_image, reference_features, initial_latents, \
+        optimized_dlatents = optimize(reference_image, reference_features, initial_latents, latent_optimizer, \
             n_iters=args.n_iters, cascade=use_cascade, cascade_iters=args.cascade_iters, smoothing=smoothing)
         
         # Save optimized latent vector
