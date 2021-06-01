@@ -3,36 +3,44 @@ This repo contains the code for my masters thesis on face generation.
 It explores the possibility of editing an image by projecting it into GAN latent space, then modifying its latent code
 using some vector arithmetic, and finally generating modified image.
 
-In this work I use StyleGAN (particularly [this](https://github.com/genforce/interfacegan) PyTorch implementation),
-but I'm trying to make it independent of a generative network to be able to easily switch them out.
+**To check it out, I highly recommend running this Colab notebook:** [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg\)](https://colab.research.google.com/github/Andre6o6/stylegan-editing/blob/master/StyleGAN_edit_images.ipynb) 
 
-## Latent optimization
+## Setup
+
+In this work I use PyTorch implementation of StyleGAN ([from here](https://github.com/genforce/interfacegan)), but I'm planning to switch to PyTorch implementation of [StyleGAN2](https://github.com/NVlabs/stylegan2-ada).
+
+Install dependances:
+`
+pip install facenet-pytorch
+`
+
+First, align images:
+`
+python align/align_images.py raw_images/ aligned_images/ --output_size=1024
+`
+
+Then, project images into latent space using latent optimization:
+`
+python encode_images.py
+`
+
+Lastly, perform feature transfer:
+`
+python edit_images.py --input path/to/input/latent --exemplar path/to/exemplar/latent
+`
+
+You can get help for command line arguments by typing `-h`:
+`
+python encode_images.py -h
+python edit_images.py -h
+`
+
+## How it works
 First step is to find corresponding latent code for the image. Since we can backpropagate gradients w.r.t. input vector 
 throught generator network, we can directly optimize the latent code using some reconstruction loss function.
 In this case it's a weighted sum of L2 loss in pixel space and L2 loss in feature space (that is, on some layer of pretrained VGG network).
 
 ![optimization](docs/optim_pipeline.gif)
 
-## Editing in latent space
 Then we need to find a certain direction, corresponding to a change in desired attribute.
-After that we can linearly shift the latent vector 
-![g(**x** + a**n**)](http://www.sciweavers.org/tex2img.php?eq=g%28%5Cmathbf%7Bx%7D%20%2B%20%5Calpha%20%5Cmathbf%7Bn%7D%29&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) 
-to make this attribute more/less prominent.
-
-![comparison](docs/pose_comparison.gif)
-
-Here
-a) is input image,
-b) shift direction is just a difference between a pair of images that differ in only one attribute,
-c) shift direction is averaged over multiple pairs,
-d) linear interpolation between *ground truth* images.
-
-I use [FEI dataset](https://fei.edu.br/~cet/facedatabase.html) for this calculation.
-
-## Edit different attributes
-![](docs/various_wraps_opt.gif)
-
-## Future plans
-This approach doesen't particularly work for some atributes, especially for ones that are not binary.
-So I'm thinking of the way to mask a part of an image and propagate this mask to the latent code, 
-in order to do some style mixing between two images.
+After that we can linearly shift the latent vector *g*(**x** + a**n**) to make this attribute more/less prominent.
