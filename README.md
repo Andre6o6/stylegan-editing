@@ -9,22 +9,26 @@ using some vector arithmetic, and finally generating modified image.
 
 In this work I use PyTorch implementation of StyleGAN ([from here](https://github.com/genforce/interfacegan)), but I'm planning to switch to PyTorch implementation of [StyleGAN2](https://github.com/NVlabs/stylegan2-ada).
 
-Install dependances:
+**Install dependances**:
 ```
-pip install facenet-pytorch
+git submodule update --init
+pip install -r requirements.txt
 ```
+Download pretrained StyleGAN weights from [here](https://drive.google.com/file/d/1r3Qygz6DaXtQwkUbd35ucA2U4hayj32m) 
+and move them to `interfacegan/models/pretrain/karras2019stylegan-ffhq-1024x1024.pkl`. 
+Also, download tretrained weights for [initial predictor](https://drive.google.com/file/d/1C9MSghPDWnkccGXgU6S9-wnRgPVBVovL).
 
-First, align images:
+**First, align images**:
 ```
 python align/align_images.py raw_images/ aligned_images/ --output_size=1024
 ```
 
-Then, project images into latent space using latent optimization:
+**Then, project images into latent space using latent optimization**:
 ```
 python encode_images.py
 ```
 
-Lastly, perform feature transfer:
+**Lastly, perform feature transfer**:
 ```
 python edit_images.py --input path/to/input/latent --exemplar path/to/exemplar/latent
 ```
