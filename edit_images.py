@@ -108,7 +108,7 @@ def arg_parse():
         "--identity",
         dest="identity",
         help="Identity correction coefficient",
-        default=2.0,
+        default=5.0,
         type=float,
     )
     parser.add_argument(
