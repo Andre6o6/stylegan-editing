@@ -11,8 +11,12 @@ In this work I use PyTorch implementation of StyleGAN ([from here](https://githu
 
 Install dependances:
 ```
-pip install facenet-pytorch
+git submodule update --init
+pip install -r requirements.txt
 ```
+Download pretrained StyleGAN weights from [here](https://drive.google.com/file/d/1r3Qygz6DaXtQwkUbd35ucA2U4hayj32m) 
+and move them to `interfacegan/models/pretrain/karras2019stylegan-ffhq-1024x1024.pkl`. 
+Also, download tretrained waights for [initial predictor](https://drive.google.com/file/d/1C9MSghPDWnkccGXgU6S9-wnRgPVBVovL).
 
 First, align images:
 ```
