@@ -1,6 +1,7 @@
 """This module implements Feature transfer using latent vectors from latent 
 optimization.
 """
+import argparse
 import numpy as np
 import os
 from PIL import Image
@@ -12,6 +13,7 @@ import torch.nn.functional as F
 from facenet_pytorch import InceptionResnetV1
 from interfacegan.models.stylegan_generator import StyleGANGenerator
 from models.latent_optimization import LatentOptimizer
+from utils.io import get_image_numpy
 
 
 def morph_coefficient(w_input, w_exemplar, boundary, map_k=None):
@@ -109,6 +111,13 @@ def arg_parse():
         default=2.0,
         type=float,
     )
+    parser.add_argument(
+        "--scale",
+        dest="scale",
+        help="Adjust transfer strength",
+        default=2.0,
+        type=float,
+    )
     return parser.parse_args()   
 
 
@@ -139,16 +148,17 @@ def main():
     facenet = InceptionResnetV1(pretrained='vggface2').to(device).eval()
     
     # Feature transfer
-    effect_coef = morph_coefficient(w_input, w_exemplar, boundary, map_k=5)
-    result_latent, _ = feature_morph(w_input, boundary, effect_coef, latent_optimizer, \
+    print(f"Transfer {args.boundary} from {args.w_exemplar} to {args.w_input}...")
+    effect_coef = args.scale * morph_coefficient(w_input, w_exemplar, boundary, map_k=5)
+    result_latent, _ = feature_morph(w_input, boundary, effect_coef, latent_optimizer, facenet, \
         n_iters=args.n_iters, identity_correction=identity_correction, identity_coef=args.identity)
     
     # Save results
     latent_name = args.w_input.split('/')[-1]
     np.save(os.path.join(args.out_dir, latent_name), result_latent)
     
-    generated_image = converted_model.synthesize(result_latent, "WP")["image"]
-    generated_image = converted_model.postprocess(generated_image)[0]
+    _, generated_image = latent_optimizer(torch.from_numpy(result_latent).to(device))
+    generated_image = get_image_numpy(generated_image, saturate=True)
     img_pil = Image.fromarray(generated_image)
     img_name = latent_name.rstrip(".npy")
     img_pil.save(os.path.join(args.out_dir, img_name))
