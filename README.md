@@ -7,7 +7,7 @@ using some vector arithmetic, and finally generating modified image.
 
 ## Setup
 
-Again, I recommend using this Colab notebook, it has some Web UI: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Andre6o6/stylegan-editing/blob/master/StyleGAN_edit_images.ipynb) 
+(Again, I recommend using this Colab notebook, it has some Web UI: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Andre6o6/stylegan-editing/blob/master/StyleGAN_edit_images.ipynb) )
 
 In this work I use PyTorch implementation of StyleGAN ([from here](https://github.com/genforce/interfacegan)), but I'm planning to switch to PyTorch implementation of [StyleGAN2](https://github.com/NVlabs/stylegan2-ada).
 
