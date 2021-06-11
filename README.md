@@ -7,6 +7,8 @@ using some vector arithmetic, and finally generating modified image.
 
 ## Setup
 
+Again, I recommend using this Colab notebook, it has some Web UI: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Andre6o6/stylegan-editing/blob/master/StyleGAN_edit_images.ipynb) 
+
 In this work I use PyTorch implementation of StyleGAN ([from here](https://github.com/genforce/interfacegan)), but I'm planning to switch to PyTorch implementation of [StyleGAN2](https://github.com/NVlabs/stylegan2-ada).
 
 **Install dependances**:
@@ -47,4 +49,9 @@ In this case it's a weighted sum of L2 loss in pixel space and L2 loss in featur
 ![optimization](docs/optim_pipeline.gif)
 
 Then we need to find a certain direction, corresponding to a change in desired attribute.
+For that we use InterFaceGAN's algorithm, that finds a separating hyperplane between two sets of generated laten vectors, with and without the attribute.
+
 After that we can linearly shift the latent vector *g*(**x** + a**n**) to make this attribute more/less prominent.
+To keep the identity on image unchanged, we also use face recognition CNN to get vector embeddings of original and editted images, and maximize cosine similarity between them.
+
+![transfers](docs/transfers.png)
